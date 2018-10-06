@@ -11,24 +11,30 @@ FLOWGEN=flowgen
 # REV=master
 REV=dev
 
-PROTO_SRC=CasperMessage.proto RhoTypes.proto google/protobuf/empty.proto
+CASPER_PROTO_SRC=CasperMessage.proto RhoTypes.proto google/protobuf/empty.proto
+REPL_PROTO_SRC=repl.proto
 
-download: $(PROTO_SRC)
-
+download: $(CASPER_PROTO_SRC) $(REPL_PROTO_SRC)
 
 ## static codegen (WIP)
 static: messages.js
 
 messages.json:
-	$(PBJS) -t json --keep-case -o $@ $(PROTO_SRC)
+	$(PBJS) -t json --keep-case -o $@ $(CASPER_PROTO_SRC)
 
-messages.js: $(PROTO_SRC)
-	$(PBJS) -t static-module -w commonjs --keep-case -o $@ $(PROTO_SRC)
+messages.js: $(CASPER_PROTO_SRC)
+	$(PBJS) -t static-module -w commonjs --keep-case -o $@ $(CASPER_PROTO_SRC)
 
-update: $(PROTO_SRC)
+repl.json:
+	$(PBJS) -t json --keep-case -o $@ $(REPL_PROTO_SRC)
+
+repl.js: $(REPL_PROTO_SRC)
+	$(PBJS) -t static-module -w commonjs --keep-case -o $@ $(REPL_PROTO_SRC)
+
+update: $(CASPER_PROTO_SRC) $(REPL_PROTO_SRC)
 
 realclean:
-	rm -rf $(PROTO_SRC) *.proto messages.js
+	rm -rf $(CASPER_PROTO_SRC) $(REPL_PROTO_SRC) *.proto messages.js
 
 RAW_GH=https://raw.githubusercontent.com
 R_SRC=$(RAW_GH)/rchain/rchain/dev
@@ -39,6 +45,8 @@ CasperMessage.proto:
 RhoTypes.proto:
 	$(WGET) -O $@ $(R_SRC)/models/src/main/protobuf/RhoTypes.proto
 
+repl.proto:
+	$(WGET) -O $@ $(R_SRC)/node/src/main/protobuf/repl.proto
 
 google/protobuf/empty.proto:
 	mkdir -p google/protobuf
@@ -59,5 +67,5 @@ RhoTypes.js:
 	$(PBJS) -t static-module -w commonjs --keep-case -o $@ RhoTypes.proto
 
 clean:
-	rm -rf messages.json messages.d.ts
+	rm -rf messages.json messages.d.ts repl.json
 
